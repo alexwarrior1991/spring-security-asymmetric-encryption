@@ -77,6 +77,16 @@ public class User implements UserDetails {
     )
     private List<Role> roles;
 
+    public void addRole(final Role role) {
+        this.roles.add(role);
+        role.getUsers().add(this);
+    }
+
+    public void removeRole(final Role role) {
+        this.roles.remove(role);
+        role.getUsers().remove(this);
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (CollectionUtils.isEmpty(this.roles)) {
@@ -89,21 +99,30 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return "";
+        return this.email;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return UserDetails.super.isAccountNonExpired();
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
+        return !this.locked;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return UserDetails.super.isCredentialsNonExpired();
+        return !this.credentialsExpired;
+    }
+
+    public String getFullName() {
+        return this.firstName + " " + this.lastName;
     }
 }
