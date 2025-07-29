@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.function.Predicate;
 
 @Component
 @RequiredArgsConstructor
@@ -30,27 +31,34 @@ public class JwtFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        if (request.getServletPath().contains("/api/v1/auth")) {
+        Predicate<HttpServletRequest> isAuthPath = req -> req.getServletPath().contains("/api/v1/auth");
+        Predicate<String> isBearerToken = authHeader -> authHeader != null && authHeader.startsWith("Bearer ");
+
+        if (isAuthPath.test(request)) {
             filterChain.doFilter(request, response);
             return;
         }
 
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        final String jwt;
-        final String username;
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (!isBearerToken.test(authHeader)) {
             filterChain.doFilter(request, response);
             return;
         }
+
+        final String jwt;
+        final String username;
 
         jwt = authHeader.substring(7);
         username = jwtService.extractUsername(jwt);
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
             final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
+            Predicate<String> isTokenValid = token -> jwtService.isTokenValid(token, userDetails.getUsername());
+
+            if (isTokenValid.test(jwt)) {
                 final UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
@@ -58,7 +66,6 @@ public class JwtFilter extends OncePerRequestFilter {
                 );
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
