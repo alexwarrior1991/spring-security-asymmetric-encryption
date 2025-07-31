@@ -21,4 +21,9 @@ public class BeansConfig {
         return configuration.getAuthenticationManager();
     }
 
+    @Bean
+    public AuditorAware<String> auditorAware() {
+        return new ApplicationAuditorAware();
+    }
+
 }
