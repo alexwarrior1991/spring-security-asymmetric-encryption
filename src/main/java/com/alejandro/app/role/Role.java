@@ -4,6 +4,7 @@ import com.alejandro.app.common.BaseEntity;
 import com.alejandro.app.user.User;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.List;
@@ -13,9 +14,8 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @Table(name = "ROLES")
-@EntityListeners(AuditingEntityListener.class)
 public class Role extends BaseEntity {
 
     @Column(name = "NAME", nullable = false)

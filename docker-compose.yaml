@@ -1,7 +1,7 @@
 services:
   postgres:
-    image: 17.5
-    container_name: spring_sec_asymmetric
+    container_name: postgres-sql-spring-app
+    image: postgres:17.5
     environment:
       POSTGRES_USER: username
       POSTGRES_PASSWORD: password
@@ -12,6 +12,5 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
-
 volumes:
   postgres:
